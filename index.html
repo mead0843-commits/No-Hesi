@@ -37,12 +37,33 @@
   const canvas=document.getElementById('road'),ctx=canvas.getContext('2d');
   const $=id=>document.getElementById(id);
   const cars=[
-    {id:'starter',name:'Street Spec',desc:'BALANCED · STARTER',price:0,color:'#e8edf0',max:260,handling:1.0},
-    {id:'sprint',name:'Night Sprint',desc:'QUICK · SHARP HANDLING',price:450,color:'#c8ff38',max:300,handling:1.16},
-    {id:'vortex',name:'Vortex GT',desc:'HIGH SPEED · LOW SLIP',price:1200,color:'#ff713b',max:350,handling:1.25},
-    {id:'phantom',name:'Phantom R',desc:'BUILT FOR THE GAP',price:2600,color:'#9d8aff',max:410,handling:1.34}
+    {id:'civic-si',name:'Honda Civic Si',desc:'ENTRY · BALANCED',price:0,color:'#e8edf0',max:260,handling:1.0},
+    {id:'golf-gti',name:'VW Golf GTI',desc:'HOT HATCH · QUICK',price:420,color:'#c8ff38',max:278,handling:1.06},
+    {id:'focus-rs',name:'Ford Focus RS',desc:'AWD · AGGRESSIVE',price:520,color:'#ff713b',max:285,handling:1.12},
+    {id:'supra',name:'Toyota GR Supra',desc:'STRAIGHT-LINE · FAST',price:680,color:'#59e5ff',max:298,handling:1.18},
+    {id:'s2000',name:'Honda S2000',desc:'LIGHT · NIMBLE',price:740,color:'#f4f7f8',max:295,handling:1.2},
+    {id:'m3',name:'BMW M3',desc:'TUNED · STABLE',price:980,color:'#d2c0ff',max:314,handling:1.21},
+    {id:'c63',name:'Mercedes C63 AMG',desc:'V8 · POWERFUL',price:1100,color:'#ffb347',max:326,handling:1.22},
+    {id:'mustang-gt',name:'Ford Mustang GT',desc:'AMERICAN · MUSCLE',price:1210,color:'#ff6b6b',max:332,handling:1.17},
+    {id:'camaro-ss',name:'Chevrolet Camaro SS',desc:'TRACK BIAS · RAW',price:1340,color:'#ffde59',max:336,handling:1.19},
+    {id:'rx7',name:'Mazda RX-7',desc:'ROTARY · LIGHT',price:1460,color:'#7ae7d3',max:341,handling:1.25},
+    {id:'nissan-gtr',name:'Nissan GT-R',desc:'TURBO · ALL-ROUND',price:1620,color:'#c0d6ff',max:355,handling:1.28},
+    {id:'subaru-sti',name:'Subaru WRX STI',desc:'AWD · GRIP',price:1710,color:'#9fd2ff',max:348,handling:1.31},
+    {id:'nissan-z',name:'Nissan Z',desc:'SPORT · FRESH',price:1840,color:'#ffd6a5',max:352,handling:1.24},
+    {id:'porsche-911',name:'Porsche 911 Carrera',desc:'PRECISION · FAST',price:2020,color:'#d1d5db',max:365,handling:1.33},
+    {id:'911-turbo',name:'Porsche 911 Turbo',desc:'BOOSTED · QUICK',price:2200,color:'#ffc285',max:380,handling:1.34},
+    {id:'corvette-c7',name:'Chevrolet Corvette C7',desc:'AMERICAN EXOTIC',price:2350,color:'#fc7868',max:389,handling:1.3},
+    {id:'audi-r8',name:'Audi R8 V10',desc:'MID-ENGINE · SHARP',price:2550,color:'#9ee0ff',max:400,handling:1.37},
+    {id:'huracan',name:'Lamborghini Huracan',desc:'SUPER · FAST',price:2780,color:'#ff8a65',max:410,handling:1.41},
+    {id:'ferrari-488',name:'Ferrari 488 GTB',desc:'RACE DNA · HEAVY',price:3020,color:'#f4e3a3',max:422,handling:1.39},
+    {id:'mclaren-570s',name:'McLaren 570S',desc:'LUXURY · LIGHT',price:3280,color:'#b6ffd8',max:429,handling:1.46},
+    {id:'tesla-model-s',name:'Tesla Model S',desc:'ELECTRIC · SMOOTH',price:3450,color:'#7bdff2',max:435,handling:1.43},
+    {id:'porsche-cayman',name:'Porsche Cayman GT4',desc:'TRACK READY · AGILE',price:3710,color:'#d4cfff',max:442,handling:1.49},
+    {id:'evo-x',name:'Mitsubishi Lancer Evo X',desc:'RALLY BRED · GRIP',price:3890,color:'#ff9a8b',max:448,handling:1.52},
+    {id:'f8-tributo',name:'Ferrari F8 Tributo',desc:'TOP SPEED · EXTREME',price:4220,color:'#fcbf49',max:462,handling:1.5},
+    {id:'bugatti-divo',name:'Bugatti Divo',desc:'ULTRA · HYPER',price:5600,color:'#e6e9ef',max:490,handling:1.61}
   ];
-  let save;try{save=JSON.parse(localStorage.getItem('nohesi-save'))||{coins:0,owned:['starter'],selected:'starter',best:0}}catch{save={coins:0,owned:['starter'],selected:'starter',best:0}}
+  let save;try{save=JSON.parse(localStorage.getItem('nohesi-save'))||{coins:0,owned:['civic-si'],selected:'civic-si',best:0}}catch{save={coins:0,owned:['civic-si'],selected:'civic-si',best:0}}
   const persist=()=>{try{localStorage.setItem('nohesi-save',JSON.stringify(save))}catch{}};
   let W=0,H=0,dpr=1,state='menu',keys={},playerX=0,playerV=0,speed=0,distance=0,score=0,boost=0,misses=0,traffic=[],spawnClock=0,roadOffset=0,last=0,toastTimer=0;
   const car=()=>cars.find(c=>c.id===save.selected)||cars[0];
@@ -61,21 +82,16 @@
   }
   function draw(){
     const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#111a20');sky.addColorStop(.52,'#26363a');sky.addColorStop(1,'#172126');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-    // distant city lights
     for(let i=0;i<32;i++){const x=((i*137)%Math.max(W,1));const bh=18+(i*29%75);ctx.fillStyle=i%3===0?'#b8a66a33':'#10181dcc';ctx.fillRect(x,H*.14-bh,W*.025,bh);if(i%3===0){ctx.fillStyle='#ffd78366';ctx.fillRect(x+4,H*.14-bh+8,3,3)}}
     const top=roadAt(0),bottom=roadAt(1);
     ctx.fillStyle='#42484a';ctx.beginPath();ctx.moveTo(W/2-top.half,top.y);ctx.lineTo(W/2+top.half,top.y);ctx.lineTo(W/2+bottom.half,bottom.y);ctx.lineTo(W/2-bottom.half,bottom.y);ctx.closePath();ctx.fill();
-    // shoulders
     ctx.strokeStyle='#c8ff38';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2-top.half,top.y);ctx.lineTo(W/2-bottom.half,bottom.y);ctx.moveTo(W/2+top.half,top.y);ctx.lineTo(W/2+bottom.half,bottom.y);ctx.stroke();
-    // road texture + dashed lanes
     ctx.lineWidth=1;for(let lane=1;lane<4;lane++){let xTop=W/2-top.half+(top.half*2)*lane/4,xBot=W/2-bottom.half+(bottom.half*2)*lane/4;ctx.strokeStyle='rgba(240,245,236,.42)';ctx.setLineDash([14,18]);ctx.lineDashOffset=-roadOffset;ctx.beginPath();ctx.moveTo(xTop,top.y);ctx.lineTo(xBot,bottom.y);ctx.stroke()}ctx.setLineDash([]);
     for(let i=0;i<9;i++){let z=((i/9+roadOffset/190)%1),p=roadAt(z),w=2+z*2;ctx.fillStyle='#d3d8d044';ctx.fillRect(W/2-p.half-9,p.y,w,5+z*5);ctx.fillRect(W/2+p.half+7,p.y,w,5+z*5)}
-    // traffic, far to near
     for(const t of [...traffic].sort((a,b)=>a.z-b.z)){const p=roadAt(t.z),x=W/2+p.half*t.lane,w=10+t.z*27,h=17+t.z*48;drawCar(x,p.y,w,h,t.color)}
     const p=roadAt(.87),px=W/2+p.half*playerX;const pw=Math.max(27,W*.045),ph=pw*1.65;
     if(boost>0){ctx.fillStyle=`rgba(200,255,56,${.07+Math.sin(performance.now()/60)*.025})`;ctx.fillRect(0,0,W,H)}
     drawCar(px,p.y,pw,ph,car().color,true);
-    // vignette
     const v=ctx.createRadialGradient(W/2,H*.5,H*.2,W/2,H*.5,H*.75);v.addColorStop(0,'transparent');v.addColorStop(1,'rgba(0,0,0,.38)');ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
   }
   function spawn(){let lane=[-.75,-.25,.25,.75][Math.floor(Math.random()*4)];if(traffic.some(t=>t.z<.3&&Math.abs(t.lane-lane)<.1))return;traffic.push({lane,z:-.05,color:['#d4d7d1','#8aabb9','#ca594d','#d5a547','#7c8798'][Math.floor(Math.random()*5)],v:.72+Math.random()*.35})}
