@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#080b10">
+  <title>NO HESI — Highway Rush</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+    :root{--bg:#080b10;--panel:rgba(12,17,24,.88);--line:rgba(255,255,255,.12);--muted:#93a0ad;--white:#f4f7f8;--lime:#c8ff38;--orange:#ff713b;--cyan:#59e5ff}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--white);font-family:'Barlow Condensed',sans-serif;overflow:hidden} button{font:inherit;color:inherit;cursor:pointer}
+    #game{position:relative;width:100%;height:100%;min-height:400px;background:#10171d;overflow:hidden} canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+    .noise{position:absolute;inset:0;pointer-events:none;opacity:.1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E")}
+    .topbar{position:absolute;left:0;right:0;top:0;padding:22px 4vw;display:flex;align-items:center;justify-content:space-between;z-index:2;pointer-events:none}.brand{font-weight:900;font-size:23px;letter-spacing:.13em}.brand span{color:var(--lime)}.wallet,.badge{font:500 12px 'DM Mono',monospace;letter-spacing:.05em;color:var(--lime);padding:10px 14px;border:1px solid rgba(200,255,56,.3);background:rgba(10,14,17,.68);border-radius:3px}
+    .hud{position:absolute;inset:88px 4vw auto;display:flex;justify-content:space-between;align-items:flex-start;z-index:2;pointer-events:none}.stat{min-width:120px}.stat-label{font:11px 'DM Mono',monospace;letter-spacing:.15em;color:#9daab3;text-transform:uppercase}.stat-value{font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.04}.stat-value small{font-size:15px;color:var(--muted);font-weight:600}.hud-right{text-align:right}.boost-wrap{margin-top:9px;width:180px}.boost-track{height:5px;background:#303940;margin-top:7px}.boost-fill{height:100%;width:0;background:var(--lime);box-shadow:0 0 12px rgba(200,255,56,.6);transition:width .12s}.boost-active{color:var(--lime)!important}
+    .center-toast{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);z-index:3;text-align:center;pointer-events:none;opacity:0;transition:opacity .15s}.center-toast.show{opacity:1}.toast-title{font-size:clamp(32px,6vw,72px);font-weight:900;line-height:.9;color:var(--lime);text-shadow:0 4px 28px #000}.toast-sub{font:12px 'DM Mono',monospace;letter-spacing:.15em;margin-top:8px}
+    .screen{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(90deg,rgba(5,8,11,.83),rgba(5,8,11,.28) 70%,rgba(5,8,11,.28));}.screen.hidden{display:none}.card{width:min(510px,94vw);padding:clamp(24px,4vw,42px);background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);box-shadow:0 20px 70px #0008;position:relative}.eyebrow{font:11px 'DM Mono',monospace;color:var(--lime);letter-spacing:.18em;text-transform:uppercase}.title{font-size:clamp(54px,8vw,90px);font-weight:900;line-height:.79;letter-spacing:-.03em;margin:15px 0 18px}.title span{color:var(--lime)}.copy{color:#bdc6cb;font-size:18px;line-height:1.35;max-width:380px;margin-bottom:26px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;padding:13px 22px;background:var(--lime);color:#10150a;font-size:17px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;transition:transform .15s,filter .15s}.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}.btn.secondary{background:transparent;color:var(--white);border:1px solid var(--line)}.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}.controls{margin-top:23px;padding-top:17px;border-top:1px solid var(--line);display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font:10px 'DM Mono',monospace;letter-spacing:.04em}.key{display:inline-grid;place-items:center;min-width:20px;height:20px;border:1px solid #53616a;border-radius:3px;color:#eff4f5;margin-right:4px;font-size:10px}
+    .shop{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:20px;background:#05080de8;backdrop-filter:blur(8px)}.shop.hidden{display:none}.shop-card{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#10161d;border:1px solid var(--line);padding:clamp(20px,4vw,38px)}.shop-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:22px}.shop-title{font-size:42px;font-weight:900;line-height:1}.shop-title small{display:block;font:10px 'DM Mono',monospace;color:var(--lime);letter-spacing:.15em;margin-bottom:8px}.close{background:none;border:1px solid var(--line);padding:8px 12px}.cars{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.car-card{border:1px solid var(--line);background:#151d25;padding:17px;position:relative}.car-card.selected{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}.swatch{width:100%;height:54px;margin-bottom:15px;clip-path:polygon(15% 30%,30% 10%,70% 10%,85% 30%,100% 80%,92% 95%,8% 95%,0 80%)}.car-name{font-size:23px;font-weight:800}.car-desc{font:10px 'DM Mono',monospace;color:var(--muted);margin:4px 0 13px}.car-bottom{display:flex;justify-content:space-between;align-items:center}.price{font:12px 'DM Mono',monospace;color:var(--lime)}.tiny-btn{background:transparent;border:1px solid var(--line);padding:7px 10px;font-size:13px;font-weight:700}.tiny-btn:hover{border-color:var(--lime)}
+    .mobile-controls{display:none;position:absolute;bottom:22px;left:0;right:0;justify-content:space-between;padding:0 6vw;z-index:3;pointer-events:none}.mobile-controls button{pointer-events:auto;background:#101820a8;border:1px solid #ffffff3b;border-radius:50%;width:58px;height:58px;font-size:22px;touch-action:none}.mobile-controls .group{display:flex;gap:10px}
+    @media(max-width:650px){.topbar{padding:15px 5vw}.hud{inset:75px 5vw auto}.stat{min-width:80px}.boost-wrap{width:125px}.screen{justify-content:flex-start;padding:14px}.card{margin-top:20px}.mobile-controls{display:flex}.controls{gap:9px}.brand{font-size:18px}}
+  </style>
+</head>
+<body>
+<div id="game">
+  <canvas id="road" aria-label="No Hesi highway driving game"></canvas><div class="noise"></div>
+  <div class="topbar"><div class="brand">NO<span>·</span>HESI <span>///</span> HIGHWAY RUSH</div><div class="wallet">◈ <span id="coin-count">0</span> CR</div></div>
+  <div class="hud" id="hud" style="display:none"><div><div class="stat-label">Distance</div><div class="stat-value"><span id="distance">0</span><small> m</small></div><div class="stat-label" style="margin-top:8px">Score <span id="score">0</span></div></div><div class="hud-right"><div class="stat-label">Run speed</div><div class="stat-value"><span id="speed">0</span><small> km/h</small></div><div class="boost-wrap"><div class="stat-label" id="boost-label">Near-miss boost</div><div class="boost-track"><div id="boost-fill" class="boost-fill"></div></div></div></div></div>
+  <div id="toast" class="center-toast"><div id="toast-title" class="toast-title">NEAR MISS!</div><div id="toast-sub" class="toast-sub">+250 POINTS · BOOST</div></div>
+  <section id="start-screen" class="screen"><div class="card"><div class="eyebrow">Traffic is the track. Don't touch it.</div><h1 class="title">RUN<br><span>THE GAP.</span></h1><p class="copy">Thread the highway traffic. Get close for a rush of boost and points—then see how far you can make it.</p><div class="actions"><button class="btn" id="start-btn">Start driving →</button><button class="btn secondary" id="garage-btn">Garage</button></div><div class="controls"><span><b class="key">W</b> ACCELERATE</span><span><b class="key">A</b><b class="key">D</b> STEER</span><span><b class="key">S</b> BRAKE</span><span>ESC PAUSE</span></div></div></section>
+  <section id="end-screen" class="screen hidden"><div class="card"><div class="eyebrow" id="end-eyebrow">Run complete</div><h2 class="title" style="font-size:clamp(48px,7vw,76px)">NICE<br><span>RUN.</span></h2><p class="copy" id="run-summary">You covered 0 m.</p><div class="actions"><button class="btn" id="retry-btn">Run it back →</button><button class="btn secondary" id="end-garage-btn">Garage</button></div><div class="controls"><span>BEST DISTANCE <strong id="best-distance" style="color:var(--white)">0 m</strong></span><span>NEAR MISSES <strong id="miss-count" style="color:var(--lime)">0</strong></span></div></div></section>
+  <section id="pause-screen" class="screen hidden"><div class="card"><div class="eyebrow">Take a breather</div><h2 class="title" style="font-size:64px">PAUSED<span>.</span></h2><p class="copy">The highway can wait. Your run is still here.</p><div class="actions"><button class="btn" id="resume-btn">Keep going →</button><button class="btn secondary" id="quit-btn">End run</button></div></div></section>
+  <div id="shop" class="shop hidden"><div class="shop-card"><div class="shop-head"><div class="shop-title"><small>YOUR COLLECTION</small>THE GARAGE</div><button id="close-shop" class="close">✕ CLOSE</button></div><div id="car-list" class="cars"></div></div></div>
+  <div id="mobile-controls" class="mobile-controls"><div class="group"><button data-key="a">◀</button><button data-key="d">▶</button></div><div class="group"><button data-key="s">▼</button><button data-key="w">▲</button></div></div>
+</div>
+<script>
+(()=>{
+  const canvas=document.getElementById('road'),ctx=canvas.getContext('2d');
+  const $=id=>document.getElementById(id);
+  const cars=[
+    {id:'starter',name:'Street Spec',desc:'BALANCED · STARTER',price:0,color:'#e8edf0',max:260,handling:1.0},
+    {id:'sprint',name:'Night Sprint',desc:'QUICK · SHARP HANDLING',price:450,color:'#c8ff38',max:300,handling:1.16},
+    {id:'vortex',name:'Vortex GT',desc:'HIGH SPEED · LOW SLIP',price:1200,color:'#ff713b',max:350,handling:1.25},
+    {id:'phantom',name:'Phantom R',desc:'BUILT FOR THE GAP',price:2600,color:'#9d8aff',max:410,handling:1.34}
+  ];
+  let save;try{save=JSON.parse(localStorage.getItem('nohesi-save'))||{coins:0,owned:['starter'],selected:'starter',best:0}}catch{save={coins:0,owned:['starter'],selected:'starter',best:0}}
+  const persist=()=>{try{localStorage.setItem('nohesi-save',JSON.stringify(save))}catch{}};
+  let W=0,H=0,dpr=1,state='menu',keys={},playerX=0,playerV=0,speed=0,distance=0,score=0,boost=0,misses=0,traffic=[],spawnClock=0,roadOffset=0,last=0,toastTimer=0;
+  const car=()=>cars.find(c=>c.id===save.selected)||cars[0];
+  function resize(){dpr=Math.min(devicePixelRatio||1,2);W=canvas.clientWidth;H=canvas.clientHeight;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+  addEventListener('resize',resize);resize();
+  function roadAt(z){const t=Math.max(0,Math.min(1,z));return {y:H*(.14+t*.9),half:W*(.11+t*.39)}}
+  function drawCar(x,y,w,h,color,player=false){
+    ctx.save();ctx.translate(x,y);
+    ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(0,h*.36,w*.67,h*.2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#11161b';ctx.fillRect(-w*.54,-h*.23,w*.16,h*.45);ctx.fillRect(w*.38,-h*.23,w*.16,h*.45);
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-w*.36,h*.45);ctx.lineTo(-w*.48,-h*.12);ctx.lineTo(-w*.32,-h*.42);ctx.quadraticCurveTo(0,-h*.53,w*.32,-h*.42);ctx.lineTo(w*.48,-h*.12);ctx.lineTo(w*.36,h*.45);ctx.closePath();ctx.fill();
+    ctx.fillStyle=player?'#152329':'#26333b';ctx.beginPath();ctx.moveTo(-w*.29,-h*.12);ctx.lineTo(-w*.21,-h*.34);ctx.quadraticCurveTo(0,-h*.41,w*.21,-h*.34);ctx.lineTo(w*.29,-h*.12);ctx.closePath();ctx.fill();
+    ctx.fillStyle=player?'#aafff2':'#ff453c';ctx.fillRect(-w*.35,h*.31,w*.18,h*.055);ctx.fillRect(w*.17,h*.31,w*.18,h*.055);
+    if(player){ctx.shadowColor=boost>0?'#c8ff38':'#4bd6ff';ctx.shadowBlur=boost>0?24:11;ctx.fillStyle=boost>0?'#d8ff75':'#62eaff';ctx.fillRect(-w*.3,h*.39,w*.16,h*.07);ctx.fillRect(w*.14,h*.39,w*.16,h*.07)}
+    ctx.restore();
+  }
+  function draw(){
+    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#111a20');sky.addColorStop(.52,'#26363a');sky.addColorStop(1,'#172126');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    // distant city lights
+    for(let i=0;i<32;i++){const x=((i*137)%Math.max(W,1));const bh=18+(i*29%75);ctx.fillStyle=i%3===0?'#b8a66a33':'#10181dcc';ctx.fillRect(x,H*.14-bh,W*.025,bh);if(i%3===0){ctx.fillStyle='#ffd78366';ctx.fillRect(x+4,H*.14-bh+8,3,3)}}
+    const top=roadAt(0),bottom=roadAt(1);
+    ctx.fillStyle='#42484a';ctx.beginPath();ctx.moveTo(W/2-top.half,top.y);ctx.lineTo(W/2+top.half,top.y);ctx.lineTo(W/2+bottom.half,bottom.y);ctx.lineTo(W/2-bottom.half,bottom.y);ctx.closePath();ctx.fill();
+    // shoulders
+    ctx.strokeStyle='#c8ff38';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2-top.half,top.y);ctx.lineTo(W/2-bottom.half,bottom.y);ctx.moveTo(W/2+top.half,top.y);ctx.lineTo(W/2+bottom.half,bottom.y);ctx.stroke();
+    // road texture + dashed lanes
+    ctx.lineWidth=1;for(let lane=1;lane<4;lane++){let xTop=W/2-top.half+(top.half*2)*lane/4,xBot=W/2-bottom.half+(bottom.half*2)*lane/4;ctx.strokeStyle='rgba(240,245,236,.42)';ctx.setLineDash([14,18]);ctx.lineDashOffset=-roadOffset;ctx.beginPath();ctx.moveTo(xTop,top.y);ctx.lineTo(xBot,bottom.y);ctx.stroke()}ctx.setLineDash([]);
+    for(let i=0;i<9;i++){let z=((i/9+roadOffset/190)%1),p=roadAt(z),w=2+z*2;ctx.fillStyle='#d3d8d044';ctx.fillRect(W/2-p.half-9,p.y,w,5+z*5);ctx.fillRect(W/2+p.half+7,p.y,w,5+z*5)}
+    // traffic, far to near
+    for(const t of [...traffic].sort((a,b)=>a.z-b.z)){const p=roadAt(t.z),x=W/2+p.half*t.lane,w=10+t.z*27,h=17+t.z*48;drawCar(x,p.y,w,h,t.color)}
+    const p=roadAt(.87),px=W/2+p.half*playerX;const pw=Math.max(27,W*.045),ph=pw*1.65;
+    if(boost>0){ctx.fillStyle=`rgba(200,255,56,${.07+Math.sin(performance.now()/60)*.025})`;ctx.fillRect(0,0,W,H)}
+    drawCar(px,p.y,pw,ph,car().color,true);
+    // vignette
+    const v=ctx.createRadialGradient(W/2,H*.5,H*.2,W/2,H*.5,H*.75);v.addColorStop(0,'transparent');v.addColorStop(1,'rgba(0,0,0,.38)');ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+  }
+  function spawn(){let lane=[-.75,-.25,.25,.75][Math.floor(Math.random()*4)];if(traffic.some(t=>t.z<.3&&Math.abs(t.lane-lane)<.1))return;traffic.push({lane,z:-.05,color:['#d4d7d1','#8aabb9','#ca594d','#d5a547','#7c8798'][Math.floor(Math.random()*5)],v:.72+Math.random()*.35})}
+  function showToast(title,sub){$('toast-title').textContent=title;$('toast-sub').textContent=sub;$('toast').classList.add('show');toastTimer=1.05}
+  function update(dt){if(state!=='playing')return;
+    const c=car(),accelerating=keys.w,braking=keys.s;
+    const target=accelerating?c.max:Math.max(145,c.max*.57);speed+=(target-speed)*Math.min(1,dt*(accelerating?1.0:.32));if(braking)speed=Math.max(75,speed-dt*245);
+    let steer=(keys.d?1:0)-(keys.a?1:0);playerV+=steer*dt*2.7*c.handling;playerV*=Math.pow(.045,dt);playerX+=playerV*dt;playerX=Math.max(-.91,Math.min(.91,playerX));
+    if(Math.abs(playerX)>.89){speed=Math.max(80,speed-dt*120)}
+    const multiplier=boost>0?1.8:1;distance+=speed/3.6*dt*multiplier;score=Math.floor(distance+misses*250);if(boost>0)boost=Math.max(0,boost-dt);roadOffset=(roadOffset+speed*dt*.22)%190;
+    spawnClock-=dt;if(spawnClock<=0){spawn();spawnClock=Math.max(.31,1.15-speed/600)*(0.72+Math.random()*.65)}
+    for(const t of traffic){t.z+=dt*(.20+speed/1450)*t.v;let dx=Math.abs(t.lane-playerX);
+      if(t.z>.77&&t.z<.91&&dx<.20){finishRun();return}
+      if(!t.passed&&t.z>=.92){t.passed=true;if(dx<.40){misses++;boost=Math.min(5.5,boost+1.8);score+=250;showToast('NEAR MISS!','+250 POINTS · BOOST');speed=Math.min(c.max+18,speed+24)}}
+    }
+    traffic=traffic.filter(t=>t.z<1.08);if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').classList.remove('show')}
+    $('distance').textContent=Math.floor(distance).toLocaleString();$('score').textContent=score.toLocaleString();$('speed').textContent=Math.round(speed);$('boost-fill').style.width=`${Math.min(100,boost/5.5*100)}%`; $('boost-label').classList.toggle('boost-active',boost>0);
+  }
+  function loop(now){let dt=Math.min(.04,(now-last)/1000||0);last=now;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+  function start(){state='playing';playerX=0;playerV=0;speed=135;distance=0;score=0;boost=0;misses=0;traffic=[];spawnClock=.5;last=performance.now();$('start-screen').classList.add('hidden');$('end-screen').classList.add('hidden');$('pause-screen').classList.add('hidden');$('hud').style.display='flex'}
+  function finishRun(){state='ended';$('hud').style.display='none';const earned=Math.max(10,Math.floor(distance/35)+misses*18);save.coins+=earned;save.best=Math.max(save.best,Math.floor(distance));persist();refreshWallet();$('run-summary').innerHTML=`You covered <strong style="color:var(--white)">${Math.floor(distance).toLocaleString()} m</strong> and scored <strong style="color:var(--white)">${score.toLocaleString()}</strong>.<br><span style="color:var(--lime)">+${earned} CR</span> added to your wallet.`;$('best-distance').textContent=save.best.toLocaleString()+' m';$('miss-count').textContent=misses;$('end-screen').classList.remove('hidden')}
+  function pause(){if(state==='playing'){state='paused';$('pause-screen').classList.remove('hidden')}}function resume(){if(state==='paused'){state='playing';$('pause-screen').classList.add('hidden');last=performance.now()}}
+  function refreshWallet(){$('coin-count').textContent=save.coins.toLocaleString()}
+  function openShop(){renderCars();$('shop').classList.remove('hidden')}
+  function renderCars(){const list=$('car-list');list.innerHTML='';for(const c of cars){const owned=save.owned.includes(c.id),selected=save.selected===c.id,el=document.createElement('article');el.className='car-card'+(selected?' selected':'');el.innerHTML=`<div class="swatch" style="background:${c.color};box-shadow:0 0 25px ${c.color}55"></div><div class="car-name">${c.name}</div><div class="car-desc">${c.desc} · ${c.max} KM/H</div><div class="car-bottom"><span class="price">${owned?(selected?'EQUIPPED':'OWNED'):`◈ ${c.price.toLocaleString()} CR`}</span><button class="tiny-btn" ${(!owned&&save.coins<c.price)?'disabled':''}>${selected?'SELECTED':owned?'SELECT':'BUY'}</button></div>`;el.querySelector('button').addEventListener('click',()=>{if(owned){save.selected=c.id}else if(save.coins>=c.price){save.coins-=c.price;save.owned.push(c.id);save.selected=c.id}persist();refreshWallet();renderCars()});list.appendChild(el)}}
+  function closeShop(){ $('shop').classList.add('hidden') }
+  $('start-btn').onclick=start;$('retry-btn').onclick=start;$('resume-btn').onclick=resume;$('quit-btn').onclick=()=>{if(state==='paused'){state='playing';finishRun()}};
+  $('garage-btn').onclick=openShop;$('end-garage-btn').onclick=openShop;$('close-shop').onclick=closeShop;
+  addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();if(k.startsWith('arrow'))k={arrowup:'w',arrowdown:'s',arrowleft:'a',arrowright:'d'}[k];keys[k]=true;if(k==='escape'){if(state==='playing')pause();else if(state==='paused')resume()}});
+  addEventListener('keyup',e=>{let k=e.key.toLowerCase();if(k.startsWith('arrow'))k={arrowup:'w',arrowdown:'s',arrowleft:'a',arrowright:'d'}[k];keys[k]=false});
+  document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true;b.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>keys[k]=false)});
+  refreshWallet();
+})();
+</script>
+</body>
+</html>
